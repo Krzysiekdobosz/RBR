@@ -24,6 +24,8 @@
 - ✅ Mailtrap integration - testowanie maili
 - ✅ Background processing
 
+![alt text](image.png)
+
 ### ✅ **4. Walidacja**
 **Wymaganie**: Poprawna walidacja formularzy
 - ✅ Request classes - StoreTaskRequest, UpdateTaskRequest

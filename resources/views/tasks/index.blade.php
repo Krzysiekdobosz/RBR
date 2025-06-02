@@ -283,45 +283,45 @@
             </div>
         </nav>
     </div>
-</div>
 
-<!-- Share Modal -->
-<div x-show="shareModal.show" x-cloak
-     class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-medium text-gray-900">Udostępnij zadanie</h3>
-        </div>
-        <div class="px-6 py-4">
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Czas wygaśnięcia (godziny)
-                </label>
-                <input type="number" x-model="shareModal.expiryHours" min="1" max="168"
-                       class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+    <!-- Share Modal -->
+    <div x-show="shareModal.show" x-cloak
+         class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Udostępnij zadanie</h3>
             </div>
-            
-            <div x-show="shareModal.url" class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Link udostępniania</label>
-                <div class="flex">
-                    <input type="text" :value="shareModal.url" readonly
-                           class="flex-1 px-3 py-2 border border-gray-300 rounded-l-md bg-gray-50 text-sm">
-                    <button @click="copyToClipboard(shareModal.url)"
-                            class="px-4 py-2 bg-indigo-600 text-white rounded-r-md hover:bg-indigo-700">
-                        <i class="fas fa-copy"></i>
-                    </button>
+            <div class="px-6 py-4">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Czas wygaśnięcia (godziny)
+                    </label>
+                    <input type="number" x-model="shareModal.expiryHours" min="1" max="168"
+                           class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                
+                <div x-show="shareModal.url" class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Link udostępniania</label>
+                    <div class="flex">
+                        <input type="text" :value="shareModal.url" readonly
+                               class="flex-1 px-3 py-2 border border-gray-300 rounded-l-md bg-gray-50 text-sm">
+                        <button @click="copyToClipboard(shareModal.url)"
+                                class="px-4 py-2 bg-indigo-600 text-white rounded-r-md hover:bg-indigo-700">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
-            <button @click="shareModal.show = false"
-                    class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
-                Anuluj
-            </button>
-            <button @click="generateShareLink()"
-                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-                <span x-text="shareModal.url ? 'Regeneruj' : 'Generuj link'"></span>
-            </button>
+            <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
+                <button @click="shareModal.show = false"
+                        class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                    Anuluj
+                </button>
+                <button @click="generateShareLink()"
+                        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                    <span x-text="shareModal.url ? 'Regeneruj' : 'Generuj link'"></span>
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -386,7 +386,7 @@ function tasksApp() {
                     }
                 });
                 
-                const response = await axios.get('/tasks', { params });
+                const response = await axios.get('/api/web/tasks', { params });
                 
                 if (response.data.success) {
                     this.tasks = response.data.data.data;
@@ -425,7 +425,7 @@ function tasksApp() {
             
             // Previous button
             buttons += `
-                <button onclick="Alpine.store('tasks').changePage(${current - 1})" 
+                <button onclick="document.querySelector('[x-data]').__x.$data.changePage(${current - 1})" 
                         ${current === 1 ? 'disabled' : ''}
                         class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
                     <i class="fas fa-chevron-left"></i>
@@ -435,7 +435,7 @@ function tasksApp() {
             // Page numbers
             for (let i = Math.max(1, current - 2); i <= Math.min(last, current + 2); i++) {
                 buttons += `
-                    <button onclick="Alpine.store('tasks').changePage(${i})" 
+                    <button onclick="document.querySelector('[x-data]').__x.$data.changePage(${i})" 
                             class="relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                                 i === current 
                                     ? 'border-indigo-500 bg-indigo-50 text-indigo-600' 
@@ -448,7 +448,7 @@ function tasksApp() {
             
             // Next button
             buttons += `
-                <button onclick="Alpine.store('tasks').changePage(${current + 1})" 
+                <button onclick="document.querySelector('[x-data]').__x.$data.changePage(${current + 1})" 
                         ${current === last ? 'disabled' : ''}
                         class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
                     <i class="fas fa-chevron-right"></i>
@@ -488,7 +488,7 @@ function tasksApp() {
             }
             
             try {
-                await axios.post('/tasks/bulk-update', {
+                await axios.post('/api/web/tasks/bulk-update', {
                     task_ids: this.selectedTasks,
                     action: this.bulkAction,
                     value: this.bulkValue
@@ -505,7 +505,7 @@ function tasksApp() {
 
         async quickUpdateStatus(taskId, newStatus) {
             try {
-                await axios.patch(`/tasks/${taskId}`, { status: newStatus });
+                await axios.patch(`/api/web/tasks/${taskId}`, { status: newStatus });
                 showFlash('Status zadania został zaktualizowany', 'success');
                 this.loadTasks(this.pagination.current_page);
             } catch (error) {
@@ -518,7 +518,7 @@ function tasksApp() {
             if (!confirm('Czy na pewno chcesz usunąć to zadanie?')) return;
             
             try {
-                await axios.delete(`/tasks/${taskId}`);
+                await axios.delete(`/api/web/tasks/${taskId}`);
                 showFlash('Zadanie zostało usunięte', 'success');
                 this.loadTasks(this.pagination.current_page);
             } catch (error) {
@@ -535,7 +535,7 @@ function tasksApp() {
 
         async generateShareLink() {
             try {
-                const response = await axios.post(`/tasks/${this.shareModal.taskId}/share`, {
+                const response = await axios.post(`/api/web/tasks/${this.shareModal.taskId}/share`, {
                     expiry_hours: this.shareModal.expiryHours
                 });
                 
@@ -551,7 +551,7 @@ function tasksApp() {
 
         async duplicateTask(taskId) {
             try {
-                const taskResponse = await axios.get(`/tasks/${taskId}`);
+                const taskResponse = await axios.get(`/api/web/tasks/${taskId}`);
                 const task = taskResponse.data.data;
                 
                 // Remove ID and update name
@@ -559,7 +559,7 @@ function tasksApp() {
                 task.name = 'Kopia: ' + task.name;
                 task.status = 'to-do';
                 
-                await axios.post('/tasks', task);
+                await axios.post('/api/web/tasks', task);
                 showFlash('Zadanie zostało zduplikowane', 'success');
                 this.loadTasks(this.pagination.current_page);
             } catch (error) {

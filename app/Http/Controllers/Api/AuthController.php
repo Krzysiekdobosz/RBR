@@ -1,21 +1,19 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
     /**
-     * Summary of register
-     * @param \Illuminate\Http\Request $request
-     * @return JsonResponse|mixed
+     * Rejestracja nowego użytkownika
      */
     public function register(Request $request): JsonResponse
     {
@@ -53,9 +51,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Summary of login
-     * @param \Illuminate\Http\Request $request
-     * @return JsonResponse|mixed
+     * Logowanie użytkownika
      */
     public function login(Request $request): JsonResponse
     {
@@ -94,9 +90,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Summary of logout
-     * @param \Illuminate\Http\Request $request
-     * @return JsonResponse|mixed
+     * Wylogowanie użytkownika
      */
     public function logout(Request $request): JsonResponse
     {
@@ -109,9 +103,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Summary of user
-     * @param \Illuminate\Http\Request $request
-     * @return JsonResponse|mixed
+     * Pobierz dane zalogowanego użytkownika
      */
     public function user(Request $request): JsonResponse
     {

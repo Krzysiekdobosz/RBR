@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\Task;
 use App\Models\SharedTaskToken;
 use Illuminate\Http\Request;
@@ -12,7 +13,7 @@ use Carbon\Carbon;
 class TaskController extends Controller
 {
     /**
-     * Lista zadań użytkownika z filtrami
+     * Lista zadań użytkownika
      */
     public function index(Request $request): JsonResponse
     {
@@ -65,16 +66,6 @@ class TaskController extends Controller
             'priority' => 'required|in:low,medium,high',
             'status' => 'required|in:to-do,in_progress,done',
             'due_date' => 'required|date|after_or_equal:today',
-        ], [
-            'name.required' => 'Nazwa zadania jest wymagana.',
-            'name.max' => 'Nazwa zadania nie może być dłuższa niż 255 znaków.',
-            'priority.required' => 'Priorytet jest wymagany.',
-            'priority.in' => 'Nieprawidłowy priorytet.',
-            'status.required' => 'Status jest wymagany.',
-            'status.in' => 'Nieprawidłowy status.',
-            'due_date.required' => 'Termin wykonania jest wymagany.',
-            'due_date.date' => 'Nieprawidłowy format daty.',
-            'due_date.after_or_equal' => 'Termin wykonania nie może być w przeszłości.',
         ]);
 
         $task = Task::create([
@@ -90,7 +81,7 @@ class TaskController extends Controller
     }
 
     /**
-     * Pokaż konkretne zadanie
+     * Pokaż zadanie
      */
     public function show(Task $task): JsonResponse
     {
@@ -160,7 +151,7 @@ class TaskController extends Controller
     }
 
     /**
-     * Generuj token udostępniania dla zadania
+     * Generuj token udostępniania
      */
     public function generateShareToken(Request $request, Task $task): JsonResponse
     {
@@ -173,10 +164,10 @@ class TaskController extends Controller
         }
 
         $validated = $request->validate([
-            'expiry_hours' => 'required|integer|min:1|max:168' // max 7 dni
+            'expiry_hours' => 'required|integer|min:1|max:168'
         ]);
 
-        // Usuń poprzednie aktywne tokeny dla tego zadania
+        // Dezaktywuj poprzednie tokeny
         SharedTaskToken::where('task_id', $task->id)
             ->where('is_active', true)
             ->update(['is_active' => false]);
@@ -203,7 +194,7 @@ class TaskController extends Controller
     }
 
     /**
-     * Operacje masowe na zadaniach
+     * Operacje grupowe na zadaniach
      */
     public function bulkUpdate(Request $request): JsonResponse
     {
@@ -214,7 +205,7 @@ class TaskController extends Controller
             'value' => 'required_unless:action,delete',
         ]);
 
-        // Sprawdź czy wszystkie zadania należą do użytkownika
+        // Sprawdź uprawnienia
         $tasks = Task::whereIn('id', $validated['task_ids'])
             ->where('user_id', auth()->id())
             ->get();

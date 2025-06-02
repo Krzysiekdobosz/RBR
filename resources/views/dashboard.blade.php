@@ -141,16 +141,16 @@
                             <i class="fas fa-plus mr-2"></i>
                             Dodaj zadanie
                         </a>
-                        <button onclick="loadTasks({ status: 'to-do' })"
-                                class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        <a href="{{ route('tasks.index') }}?status=to-do"
+                           class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                             <i class="fas fa-list mr-2"></i>
                             Zadania do zrobienia
-                        </button>
-                        <button onclick="loadTasks({ overdue: true })"
-                                class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        </a>
+                        <a href="{{ route('tasks.index') }}?overdue=true"
+                           class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                             <i class="fas fa-exclamation-triangle mr-2"></i>
                             Przeterminowane
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function loadRecentTasks() {
     try {
-        const response = await axios.get('/tasks', {
+        const response = await axios.get('/api/web/tasks', {
             params: {
                 per_page: 5,
                 sort_by: 'updated_at',
@@ -212,10 +212,39 @@ async function loadRecentTasks() {
         }
     } catch (error) {
         console.error('Error loading recent tasks:', error);
+        
+        // Bardziej szczegółowa obsługa błędów
+        let errorMessage = 'Błąd podczas ładowania zadań';
+        let errorIcon = 'fa-exclamation-circle';
+        
+        if (error.response) {
+            console.error('Response status:', error.response.status);
+            console.error('Response data:', error.response.data);
+            
+            if (error.response.status === 401) {
+                errorMessage = 'Brak autoryzacji - zaloguj się ponownie';
+                errorIcon = 'fa-lock';
+                setTimeout(() => window.location.href = '/login', 2000);
+            } else if (error.response.status === 404) {
+                errorMessage = 'Endpoint nie został znaleziony';
+                errorIcon = 'fa-search';
+            } else if (error.response.status === 500) {
+                errorMessage = 'Błąd serwera - spróbuj ponownie później';
+                errorIcon = 'fa-server';
+            }
+        } else if (error.request) {
+            errorMessage = 'Brak odpowiedzi z serwera';
+            errorIcon = 'fa-wifi';
+        }
+        
         document.getElementById('recent-tasks').innerHTML = `
-            <div class="text-center py-4">
-                <i class="fas fa-exclamation-circle text-red-400 text-xl"></i>
-                <p class="mt-2 text-sm text-red-600">Błąd podczas ładowania zadań</p>
+            <div class="text-center py-8">
+                <i class="fas ${errorIcon} text-red-400 text-3xl"></i>
+                <p class="mt-2 text-sm text-red-600">${errorMessage}</p>
+                <button onclick="loadRecentTasks()" class="mt-4 inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    <i class="fas fa-redo mr-2"></i>
+                    Spróbuj ponownie
+                </button>
             </div>
         `;
     }
@@ -224,13 +253,13 @@ async function loadRecentTasks() {
 function displayRecentTasks(tasks) {
     const container = document.getElementById('recent-tasks');
     
-    if (tasks.length === 0) {
+    if (!tasks || tasks.length === 0) {
         container.innerHTML = `
-            <div class="text-center py-4">
-                <i class="fas fa-inbox text-gray-400 text-xl"></i>
-                <p class="mt-2 text-sm text-gray-500">Brak zadań</p>
-                <a href="/tasks/create" class="mt-2 inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                    <i class="fas fa-plus mr-1"></i>
+            <div class="text-center py-8">
+                <i class="fas fa-inbox text-gray-300 text-4xl"></i>
+                <p class="mt-2 text-sm text-gray-500">Brak zadań do wyświetlenia</p>
+                <a href="{{ route('tasks.create') }}" class="mt-4 inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+                    <i class="fas fa-plus mr-2"></i>
                     Dodaj pierwsze zadanie
                 </a>
             </div>
@@ -239,35 +268,51 @@ function displayRecentTasks(tasks) {
     }
     
     container.innerHTML = tasks.map(task => `
-        <div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg task-priority-${task.priority}">
+        <div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow task-priority-${task.priority}">
             <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium text-gray-900 truncate ${task.status === 'done' ? 'line-through opacity-60' : ''}">
-                    ${task.name}
+                    ${escapeHtml(task.name)}
                 </p>
-                <div class="flex items-center mt-1 space-x-2">
+                <div class="flex items-center mt-1 space-x-2 text-xs">
                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getStatusBadge(task.status)}">
                         ${getStatusLabel(task.status)}
                     </span>
                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getPriorityBadge(task.priority)}">
                         ${getPriorityLabel(task.priority)}
                     </span>
-                    <span class="text-xs text-gray-500">
-                        ${formatDate(task.due_date)}
-                    </span>
+                    ${task.due_date ? `
+                        <span class="text-gray-500">
+                            <i class="far fa-calendar text-gray-400 mr-1"></i>
+                            ${formatDate(task.due_date)}
+                        </span>
+                    ` : ''}
                 </div>
             </div>
             <div class="ml-4 flex items-center space-x-2">
-                <a href="/tasks/${task.id}" class="text-indigo-600 hover:text-indigo-500">
+                <a href="/tasks/${task.id}" 
+                   class="text-gray-400 hover:text-gray-600 transition-colors"
+                   title="Zobacz szczegóły">
                     <i class="fas fa-eye"></i>
+                </a>
+                <a href="/tasks/${task.id}/edit" 
+                   class="text-gray-400 hover:text-indigo-600 transition-colors"
+                   title="Edytuj">
+                    <i class="fas fa-edit"></i>
                 </a>
             </div>
         </div>
     `).join('');
 }
 
-function loadTasks(filters = {}) {
-    const params = new URLSearchParams(filters);
-    window.location.href = '/tasks?' + params.toString();
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
 }
 
 function getStatusBadge(status) {
@@ -307,17 +352,32 @@ function getPriorityLabel(priority) {
 }
 
 function formatDate(dateString) {
+    if (!dateString) return '';
+    
     const date = new Date(dateString);
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
     
-    if (date.toDateString() === today.toDateString()) {
+    // Reset czasu dla porównania dat
+    today.setHours(0, 0, 0, 0);
+    tomorrow.setHours(0, 0, 0, 0);
+    const dateCompare = new Date(date);
+    dateCompare.setHours(0, 0, 0, 0);
+    
+    if (dateCompare.getTime() === today.getTime()) {
         return 'Dziś';
-    } else if (date.toDateString() === tomorrow.toDateString()) {
+    } else if (dateCompare.getTime() === tomorrow.getTime()) {
         return 'Jutro';
+    } else if (dateCompare < today) {
+        const daysAgo = Math.floor((today - dateCompare) / (1000 * 60 * 60 * 24));
+        return `${daysAgo} dni temu`;
     } else {
-        return date.toLocaleDateString('pl-PL');
+        return date.toLocaleDateString('pl-PL', { 
+            day: 'numeric', 
+            month: 'short', 
+            year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined 
+        });
     }
 }
 </script>

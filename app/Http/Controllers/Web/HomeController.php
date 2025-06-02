@@ -12,10 +12,14 @@ class HomeController extends Controller
     {
         $user = $request->user();
         
+        // Używamy metod z modelu User
+        $stats = $user->getTasksCountByStatus();
+        $overdueCount = $user->getOverdueTasksCount();
+        
         return view('dashboard', [
             'user' => $user,
-            'stats' => $user->getTasksCountByStatus(),
-            'overdueCount' => $user->getOverdueTasksCount(),
+            'stats' => $stats,
+            'overdueCount' => $overdueCount,
         ]);
     }
 

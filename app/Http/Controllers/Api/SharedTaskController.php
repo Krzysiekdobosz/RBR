@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\SharedTaskToken;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -9,9 +10,7 @@ use Illuminate\Http\JsonResponse;
 class SharedTaskController extends Controller
 {
     /**
-     * Summary of show
-     * @param string $token
-     * @return JsonResponse|mixed
+     * Pokaż udostępnione zadanie (JSON API)
      */
     public function show(string $token): JsonResponse
     {
@@ -56,10 +55,7 @@ class SharedTaskController extends Controller
     }
 
     /**
-     * Summary of deactivate
-     * @param \Illuminate\Http\Request $request
-     * @param string $token
-     * @return JsonResponse|mixed
+     * Dezaktywuj token udostępniania
      */
     public function deactivate(Request $request, string $token): JsonResponse
     {
@@ -75,10 +71,11 @@ class SharedTaskController extends Controller
             ], 404);
         }
 
+        // Sprawdź czy użytkownik jest właścicielem zadania
         if ($shareToken->task->user_id !== $request->user()->id) {
             return response()->json([
                 'success' => false,
-                'message' => 'Brak uprawnień'
+                'message' => 'Brak uprawnień do dezaktywacji tego tokenu'
             ], 403);
         }
 

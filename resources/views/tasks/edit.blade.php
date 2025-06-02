@@ -1,10 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'Edytuj: ' . $task->name . ' - ToDo App')
+@section('title', 'Edytuj: ' . $task->name . ' - RBR Krzysztof Dobosz')
 
 @section('content')
 <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8" x-data="taskEditForm({{ $task->id }})">
-    <!-- Header -->
     <div class="mb-8">
         <nav class="flex" aria-label="Breadcrumb">
             <ol class="flex items-center space-x-4">
@@ -39,10 +38,8 @@
         </div>
     </div>
 
-    <!-- Form -->
     <div class="bg-white shadow rounded-lg">
         <form @submit.prevent="handleSubmit" class="space-y-6 p-6">
-            <!-- Name -->
             <div>
                 <label for="name" class="block text-sm font-medium text-gray-700">
                     Nazwa zadania <span class="text-red-500">*</span>

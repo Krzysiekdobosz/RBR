@@ -20,7 +20,6 @@
             </p>
         </div>
 
-        <!-- Wyświetlanie błędów walidacji -->
         @if ($errors->any())
             <div class="rounded-md bg-red-50 p-4">
                 <div class="flex">
@@ -43,7 +42,6 @@
             </div>
         @endif
 
-        <!-- Wyświetlanie wiadomości sukcesu -->
         @if (session('success'))
             <div class="rounded-md bg-green-50 p-4">
                 <div class="flex">

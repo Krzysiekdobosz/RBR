@@ -13,7 +13,9 @@ use Illuminate\Support\Facades\Validator;
 class AuthController extends Controller
 {
     /**
-     * Rejestracja nowego użytkownika
+     * Summary of register
+     * @param \Illuminate\Http\Request $request
+     * @return JsonResponse|mixed
      */
     public function register(Request $request): JsonResponse
     {
@@ -49,9 +51,10 @@ class AuthController extends Controller
             ]
         ], 201);
     }
-
     /**
-     * Logowanie użytkownika
+     * Summary of login
+     * @param \Illuminate\Http\Request $request
+     * @return JsonResponse|mixed
      */
     public function login(Request $request): JsonResponse
     {
@@ -88,9 +91,11 @@ class AuthController extends Controller
             ]
         ]);
     }
-
+    
     /**
-     * Wylogowanie użytkownika
+     * Summary of logout
+     * @param \Illuminate\Http\Request $request
+     * @return JsonResponse|mixed
      */
     public function logout(Request $request): JsonResponse
     {
@@ -103,7 +108,9 @@ class AuthController extends Controller
     }
 
     /**
-     * Pobierz dane zalogowanego użytkownika
+     * Summary of user
+     * @param \Illuminate\Http\Request $request
+     * @return JsonResponse|mixed
      */
     public function user(Request $request): JsonResponse
     {

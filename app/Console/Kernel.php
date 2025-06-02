@@ -15,7 +15,6 @@ class Kernel extends ConsoleKernel
             ->runInBackground()
             ->emailOutputOnFailure(config('mail.from.address'));
 
-        // Opcjonalnie: czyszczenie wygasłych tokenów co tydzień
         $schedule->call(function () {
             \App\Models\SharedTaskToken::where('expires_at', '<', now())
                 ->orWhere('is_active', false)

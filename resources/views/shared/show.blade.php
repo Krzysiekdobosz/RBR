@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $task->name . ' - ToDo App')
+@section('title', $task->name . ' - RBR Krzysztof Dobosz')
 
 @section('content')
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8" x-data="taskView({{ $task->id }})">

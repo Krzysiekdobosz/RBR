@@ -1,10 +1,9 @@
 @extends('layouts.app')
 
-@section('title', $task->name . ' - ToDo App')
+@section('title', $task->name . ' - RBR Krzysztof Dobosz')
 
 @section('content')
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8" x-data="taskView({{ $task->id }})">
-    <!-- Header -->
     <div class="mb-8">
         <nav class="flex" aria-label="Breadcrumb">
             <ol class="flex items-center space-x-4">
@@ -24,7 +23,6 @@
         </nav>
     </div>
 
-    <!-- Task Header -->
     <div class="bg-white shadow rounded-lg mb-6">
         <div class="px-6 py-4 border-b border-gray-200">
             <div class="flex items-center justify-between">
@@ -49,7 +47,6 @@
                 </div>
                 
                 <div class="flex items-center space-x-3">
-                    <!-- Quick Status Change -->
                     <select @change="updateTaskStatus($event.target.value)"
                             class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                         <option value="to-do" {{ $task->status === 'to-do' ? 'selected' : '' }}>Do zrobienia</option>
@@ -57,7 +54,6 @@
                         <option value="done" {{ $task->status === 'done' ? 'selected' : '' }}>Zakończone</option>
                     </select>
                     
-                    <!-- Actions Dropdown -->
                     <div class="relative" x-data="{ open: false }">
                         <button @click="open = !open" 
                                 class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
@@ -96,11 +92,8 @@
         </div>
     </div>
 
-    <!-- Task Details Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Main Content -->
         <div class="lg:col-span-2 space-y-6">
-            <!-- Description -->
             <div class="bg-white shadow rounded-lg">
                 <div class="px-6 py-4 border-b border-gray-200">
                     <h3 class="text-lg font-medium text-gray-900">Opis zadania</h3>
@@ -124,46 +117,83 @@
                 </div>
             </div>
 
-            <!-- Activity Log (placeholder for future feature) -->
             <div class="bg-white shadow rounded-lg">
                 <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-medium text-gray-900">Historia aktywności</h3>
+                    <h3 class="text-lg font-medium text-gray-900">Historia zmian</h3>
                 </div>
-                <div class="px-6 py-4">
-                    <div class="space-y-4">
+                <div class="px-6 py-4 space-y-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-plus text-green-600 text-sm"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-900">
+                                Zadanie zostało utworzone
+                            </p>
+                            <p class="text-sm text-gray-500">
+                                {{ $task->created_at->format('d.m.Y H:i') }}
+                            </p>
+                        </div>
+                    </div>
+
+                    @foreach($versions as $version)
                         <div class="flex items-start">
                             <div class="flex-shrink-0">
-                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-plus text-green-600 text-sm"></i>
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-history text-blue-600 text-sm"></i>
                                 </div>
                             </div>
                             <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-900">Zadanie zostało utworzone</p>
-                                <p class="text-sm text-gray-500">{{ $task->created_at->format('d.m.Y H:i') }}</p>
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">
+                                            {{ $version->getActionDescription() }}
+                                        </p>
+                                        <p class="text-sm text-gray-500">
+                                            {{ $version->created_at->format('d.m.Y H:i') }}
+                                        </p>
+                                    </div>
+                                    <a href="{{ route('tasks.versions.show', [$task, $version]) }}"
+                                       class="text-indigo-600 hover:underline text-sm">
+                                        zobacz pełną wersję
+                                    </a>
+                                </div>
+                                
+                                @if($version->changes)
+                                    <div class="mt-2 space-y-1">
+                                        @foreach($version->getFormattedChanges() as $change)
+                                            <div class="text-sm text-gray-600">
+                                                <span class="font-medium">{{ $change['label'] }}:</span>
+                                                @if($change['old_value'] && $change['new_value'])
+                                                    <span class="text-red-600">{{ Str::limit($change['old_value'], 30) }}</span>
+                                                    →
+                                                    <span class="text-green-600">{{ Str::limit($change['new_value'], 30) }}</span>
+                                                @elseif($change['new_value'])
+                                                    dodano: <span class="text-green-600">{{ Str::limit($change['new_value'], 30) }}</span>
+                                                @elseif($change['old_value'])
+                                                    usunięto: <span class="text-red-600">{{ Str::limit($change['old_value'], 30) }}</span>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
                         </div>
-                        
-                        @if($task->updated_at != $task->created_at)
-                            <div class="flex items-start">
-                                <div class="flex-shrink-0">
-                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-edit text-blue-600 text-sm"></i>
-                                    </div>
-                                </div>
-                                <div class="ml-4">
-                                    <p class="text-sm font-medium text-gray-900">Zadanie zostało zaktualizowane</p>
-                                    <p class="text-sm text-gray-500">{{ $task->updated_at->format('d.m.Y H:i') }}</p>
-                                </div>
-                            </div>
-                        @endif
-                    </div>
+                    @endforeach
+
+                    @if($versions->isEmpty())
+                        <div class="text-center py-8">
+                            <i class="fas fa-history text-gray-300 text-3xl"></i>
+                            <p class="mt-2 text-sm text-gray-500">Brak historii edycji</p>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
 
-        <!-- Sidebar -->
         <div class="space-y-6">
-            <!-- Task Info -->
             <div class="bg-white shadow rounded-lg">
                 <div class="px-6 py-4 border-b border-gray-200">
                     <h3 class="text-lg font-medium text-gray-900">Informacje</h3>
@@ -212,7 +242,6 @@
                 </div>
             </div>
 
-            <!-- Quick Actions -->
             <div class="bg-white shadow rounded-lg">
                 <div class="px-6 py-4 border-b border-gray-200">
                     <h3 class="text-lg font-medium text-gray-900">Szybkie akcje</h3>
@@ -248,7 +277,6 @@
         </div>
     </div>
 
-    <!-- Share Modal -->
     <div x-show="shareModal.show" x-cloak
          class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
         <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
@@ -310,7 +338,6 @@ function taskView(taskId) {
                     this.task.status = newStatus;
                     showFlash('Status zadania został zaktualizowany', 'success');
                     
-                    // Refresh page to update UI
                     setTimeout(() => {
                         window.location.reload();
                     }, 1000);
@@ -371,7 +398,6 @@ function taskView(taskId) {
             try {
                 const task = { ...this.task };
                 
-                // Remove ID and update name
                 delete task.id;
                 task.name = 'Kopia: ' + task.name;
                 task.status = 'to-do';
@@ -398,3 +424,4 @@ function taskView(taskId) {
     }
 }
 </script>
+@endsection

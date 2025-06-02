@@ -202,7 +202,7 @@
                     <div class="flex items-center justify-center">
                         <i class="fas fa-tasks text-indigo-600 text-2xl mr-3"></i>
                         <div>
-                            <h3 class="text-lg font-medium text-gray-900">ToDo App</h3>
+                            <h3 class="text-lg font-medium text-gray-900">RBR Krzysztof Dobosz</h3>
                             <p class="text-sm text-gray-500">Prosty system zarządzania zadaniami</p>
                         </div>
                     </div>
@@ -256,24 +256,20 @@
                 </div>
             `;
             
-            // Auto remove after 5 seconds
             setTimeout(() => {
                 const element = document.getElementById(id);
                 if (element) element.remove();
             }, 5000);
         }
 
-        // Auto-refresh if link expires soon
         const expiresAt = new Date('{{ $shareToken->expires_at->toISOString() }}');
         const now = new Date();
         const timeUntilExpiry = expiresAt.getTime() - now.getTime();
 
-        // Show warning if expires in less than 1 hour
         if (timeUntilExpiry > 0 && timeUntilExpiry < 3600000) {
             showFlash('Ten link wygaśnie wkrótce!', 'warning');
         }
 
-        // Redirect if already expired
         if (timeUntilExpiry <= 0) {
             showFlash('Ten link wygasł', 'error');
             setTimeout(() => {

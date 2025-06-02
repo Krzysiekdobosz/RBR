@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Profil - ToDo App')
+@section('title', 'Profil - Krzysztof Dobosz')
 
 @section('content')
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8" x-data="profileApp()">
@@ -168,13 +168,7 @@
                 <div class="px-6 py-4 border-b border-gray-200">
                     <h3 class="text-lg font-medium text-gray-900">Akcje konta</h3>
                 </div>
-                <div class="p-6 space-y-3">
-                    <button @click="exportData()"
-                            class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                        <i class="fas fa-download mr-2"></i>
-                        Eksportuj dane
-                    </button>
-                    
+                <div class="p-6 space-y-3">                    
                     <button @click="showDeleteModal = true"
                             class="w-full inline-flex items-center justify-center px-4 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50">
                         <i class="fas fa-trash mr-2"></i>

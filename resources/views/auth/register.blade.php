@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Rejestracja - ToDo App')
+@section('title', 'Rejestracja - RBR Krzysztof Dobosz')
 
 @section('content')
 <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -20,7 +20,6 @@
             </p>
         </div>
         
-        <!-- Wyświetlanie błędów walidacji -->
         @if ($errors->any())
             <div class="rounded-md bg-red-50 p-4">
                 <div class="flex">

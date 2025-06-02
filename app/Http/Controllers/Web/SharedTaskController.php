@@ -10,7 +10,9 @@ use Illuminate\View\View;
 class SharedTaskController extends Controller
 {
     /**
-     * Wyświetl udostępnione zadanie (widok HTML)
+     * Summary of show
+     * @param string $token
+     * @return \Illuminate\Contracts\View\View
      */
     public function show(string $token): View
     {

@@ -12,8 +12,11 @@ use Carbon\Carbon;
 
 class TaskController extends Controller
 {
+
     /**
-     * Lista zadań użytkownika
+     * Summary of index
+     * @param \Illuminate\Http\Request $request
+     * @return JsonResponse|mixed
      */
     public function index(Request $request): JsonResponse
     {
@@ -40,12 +43,10 @@ class TaskController extends Controller
             $query->where('due_date', '<', now())->whereNot('status', 'done');
         }
 
-        // Sortowanie
         $sortBy = $request->get('sort_by', 'due_date');
         $sortOrder = $request->get('sort_order', 'asc');
         $query->orderBy($sortBy, $sortOrder);
 
-        // Paginacja
         $perPage = $request->get('per_page', 15);
         $tasks = $query->paginate($perPage);
 
@@ -56,7 +57,9 @@ class TaskController extends Controller
     }
 
     /**
-     * Utwórz nowe zadanie
+     * Summary of store
+     * @param \Illuminate\Http\Request $request
+     * @return JsonResponse|mixed
      */
     public function store(Request $request): JsonResponse
     {
@@ -81,7 +84,9 @@ class TaskController extends Controller
     }
 
     /**
-     * Pokaż zadanie
+     * Summary of show
+     * @param \App\Models\Task $task
+     * @return JsonResponse|mixed
      */
     public function show(Task $task): JsonResponse
     {
@@ -100,7 +105,10 @@ class TaskController extends Controller
     }
 
     /**
-     * Zaktualizuj zadanie
+     * Summary of update
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Task $task
+     * @return JsonResponse|mixed
      */
     public function update(Request $request, Task $task): JsonResponse
     {
@@ -130,7 +138,9 @@ class TaskController extends Controller
     }
 
     /**
-     * Usuń zadanie
+     * Summary of destroy
+     * @param \App\Models\Task $task
+     * @return JsonResponse|mixed
      */
     public function destroy(Task $task): JsonResponse
     {
@@ -151,7 +161,10 @@ class TaskController extends Controller
     }
 
     /**
-     * Generuj token udostępniania
+     * Summary of generateShareToken
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Task $task
+     * @return JsonResponse|mixed
      */
     public function generateShareToken(Request $request, Task $task): JsonResponse
     {
@@ -167,12 +180,10 @@ class TaskController extends Controller
             'expiry_hours' => 'required|integer|min:1|max:168'
         ]);
 
-        // Dezaktywuj poprzednie tokeny
         SharedTaskToken::where('task_id', $task->id)
             ->where('is_active', true)
             ->update(['is_active' => false]);
 
-        // Utwórz nowy token
         $shareToken = SharedTaskToken::create([
             'task_id' => $task->id,
             'token' => Str::random(32),
@@ -194,7 +205,9 @@ class TaskController extends Controller
     }
 
     /**
-     * Operacje grupowe na zadaniach
+     * Summary of bulkUpdate
+     * @param \Illuminate\Http\Request $request
+     * @return JsonResponse|mixed
      */
     public function bulkUpdate(Request $request): JsonResponse
     {

@@ -15,7 +15,8 @@ use Carbon\Carbon;
 class TaskWebController extends Controller
 {
     /**
-     * Wyświetl listę zadań
+     * Summary of index
+     * @return \Illuminate\Contracts\View\View
      */
     public function index(): View
     {
@@ -23,13 +24,14 @@ class TaskWebController extends Controller
     }
 
     /**
-     * API endpoint dla listy zadań (dla AJAX)
+     * Summary of apiIndex
+     * @param \Illuminate\Http\Request $request
+     * @return JsonResponse|mixed
      */
     public function apiIndex(Request $request): JsonResponse
     {
         $query = Task::where('user_id', auth()->id());
 
-        // Filtrowanie
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
@@ -50,12 +52,10 @@ class TaskWebController extends Controller
             $query->where('due_date', '<', now())->whereNot('status', 'done');
         }
 
-        // Sortowanie
         $sortBy = $request->get('sort_by', 'due_date');
         $sortOrder = $request->get('sort_order', 'asc');
         $query->orderBy($sortBy, $sortOrder);
 
-        // Paginacja
         $perPage = $request->get('per_page', 15);
         $tasks = $query->paginate($perPage);
 
@@ -66,7 +66,8 @@ class TaskWebController extends Controller
     }
 
     /**
-     * Pokaż formularz tworzenia zadania
+     * Summary of create
+     * @return \Illuminate\Contracts\View\View
      */
     public function create(): View
     {
@@ -74,7 +75,9 @@ class TaskWebController extends Controller
     }
 
     /**
-     * Zapisz nowe zadanie
+     * Summary of store
+     * @param \Illuminate\Http\Request $request
+     * @return JsonResponse|mixed
      */
     public function store(Request $request): JsonResponse
     {
@@ -109,24 +112,28 @@ class TaskWebController extends Controller
     }
 
     /**
-     * Wyświetl zadanie
+     * Summary of show
+     * @param \App\Models\Task $task
+     * @return \Illuminate\Contracts\View\View
      */
     public function show(Task $task): View
     {
-        // Sprawdź uprawnienia
         if ($task->user_id !== auth()->id()) {
             abort(403, 'Brak uprawnień do tego zadania');
         }
 
-        return view('tasks.show', compact('task'));
+        $versions = $task->versions()->latest()->get();
+
+        return view('tasks.show', compact('task', 'versions'));
     }
 
     /**
-     * API endpoint dla pojedynczego zadania
+     * Summary of apiShow
+     * @param \App\Models\Task $task
+     * @return JsonResponse|mixed
      */
     public function apiShow(Task $task): JsonResponse
     {
-        // Sprawdź uprawnienia
         if ($task->user_id !== auth()->id()) {
             return response()->json([
                 'success' => false,
@@ -141,11 +148,12 @@ class TaskWebController extends Controller
     }
 
     /**
-     * Pokaż formularz edycji
+     * Summary of edit
+     * @param \App\Models\Task $task
+     * @return \Illuminate\Contracts\View\View
      */
     public function edit(Task $task): View
     {
-        // Sprawdź uprawnienia
         if ($task->user_id !== auth()->id()) {
             abort(403, 'Brak uprawnień do tego zadania');
         }
@@ -154,11 +162,13 @@ class TaskWebController extends Controller
     }
 
     /**
-     * Zaktualizuj zadanie
+     * Summary of update
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Task $task
+     * @return JsonResponse|mixed
      */
     public function update(Request $request, Task $task): JsonResponse
     {
-        // Sprawdź uprawnienia
         if ($task->user_id !== auth()->id()) {
             return response()->json([
                 'success' => false,
@@ -184,11 +194,12 @@ class TaskWebController extends Controller
     }
 
     /**
-     * Usuń zadanie
+     * Summary of destroy
+     * @param \App\Models\Task $task
+     * @return JsonResponse|mixed
      */
     public function destroy(Task $task): JsonResponse
     {
-        // Sprawdź uprawnienia
         if ($task->user_id !== auth()->id()) {
             return response()->json([
                 'success' => false,
@@ -205,11 +216,13 @@ class TaskWebController extends Controller
     }
 
     /**
-     * Generuj token udostępniania
+     * Summary of generateShareToken
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Task $task
+     * @return JsonResponse|mixed
      */
     public function generateShareToken(Request $request, Task $task): JsonResponse
     {
-        // Sprawdź uprawnienia
         if ($task->user_id !== auth()->id()) {
             return response()->json([
                 'success' => false,
@@ -221,12 +234,10 @@ class TaskWebController extends Controller
             'expiry_hours' => 'required|integer|min:1|max:168'
         ]);
 
-        // Usuń poprzednie aktywne tokeny
         SharedTaskToken::where('task_id', $task->id)
             ->where('is_active', true)
             ->update(['is_active' => false]);
 
-        // Utwórz nowy token
         $shareToken = SharedTaskToken::create([
             'task_id' => $task->id,
             'token' => Str::random(32),
@@ -248,7 +259,8 @@ class TaskWebController extends Controller
     }
 
     /**
-     * API endpoint dla danych użytkownika (dla profilu)
+     * Summary of apiUser
+     * @return JsonResponse|mixed
      */
     public function apiUser(): JsonResponse
     {
@@ -263,6 +275,12 @@ class TaskWebController extends Controller
             ]
         ]);
     }
+
+    /**
+     * Summary of bulkUpdate
+     * @param \Illuminate\Http\Request $request
+     * @return JsonResponse|mixed
+     */
     public function bulkUpdate(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -272,7 +290,6 @@ class TaskWebController extends Controller
             'value' => 'required_unless:action,delete',
         ]);
 
-        // Sprawdź uprawnienia
         $tasks = Task::whereIn('id', $validated['task_ids'])
             ->where('user_id', auth()->id())
             ->get();
@@ -305,6 +322,38 @@ class TaskWebController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Operacja wykonana pomyślnie'
+        ]);
+    }
+
+    /**
+     * Summary of history
+     * @param \App\Models\Task $task
+     * @return JsonResponse|mixed
+     */
+    public function history(Task $task): JsonResponse
+    {
+        if ($task->user_id !== auth()->id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Brak uprawnień do tego zadania'
+            ], 403);
+        }
+
+        $versions = $task->versions()
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($version) {
+                return [
+                    'id' => $version->id,
+                    'created_at' => $version->created_at->format('d.m.Y H:i'),
+                    'changes' => $version->getFormattedChanges(),
+                    'has_changes' => !empty($version->changes),
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => $versions
         ]);
     }
 }

@@ -1,0 +1,3 @@
+CREATE DATABASE IF NOT EXISTS rbr_database;
+GRANT ALL PRIVILEGES ON rbr_database.* TO 'rbr_user'@'%';
+FLUSH PRIVILEGES;

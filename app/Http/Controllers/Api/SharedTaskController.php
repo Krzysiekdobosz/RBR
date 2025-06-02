@@ -10,7 +10,9 @@ use Illuminate\Http\JsonResponse;
 class SharedTaskController extends Controller
 {
     /**
-     * Pokaż udostępnione zadanie (JSON API)
+     * Summary of show
+     * @param string $token
+     * @return JsonResponse|mixed
      */
     public function show(string $token): JsonResponse
     {
@@ -55,7 +57,10 @@ class SharedTaskController extends Controller
     }
 
     /**
-     * Dezaktywuj token udostępniania
+     * Summary of deactivate
+     * @param \Illuminate\Http\Request $request
+     * @param string $token
+     * @return JsonResponse|mixed
      */
     public function deactivate(Request $request, string $token): JsonResponse
     {

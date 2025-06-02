@@ -4,18 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'ToDo App')</title>
-    
-    <!-- Tailwind CSS -->
+
+    <title>@yield('title', 'RBR Krzysztof Dobosz')</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Axios -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    
-    <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -29,7 +23,6 @@
     </style>
     
     <script>
-        // Inicjalizacja Alpine.js przed jego załadowaniem
         document.addEventListener('alpine:init', () => {
             Alpine.store('loading', {
                 show: false
@@ -40,15 +33,13 @@
 <body class="h-full">
     <div id="app" class="min-h-full">
         @auth
-            <!-- Nawigacja dla zalogowanych użytkowników -->
             <nav class="bg-white shadow-sm border-b border-gray-200" x-data="{ mobileOpen: false }">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="flex justify-between h-16">
-                        <!-- Logo i menu główne -->
                         <div class="flex">
                             <div class="flex-shrink-0 flex items-center">
                                 <a href="{{ route('dashboard') }}" class="text-xl font-bold text-indigo-600">
-                                    <i class="fas fa-tasks mr-2"></i>ToDo App
+                                    <i class="fas fa-tasks mr-2"></i>RBR Krzysztof Dobosz
                                 </a>
                             </div>
                             
@@ -65,7 +56,6 @@
                             </div>
                         </div>
                         
-                        <!-- Menu użytkownika desktop -->
                         <div class="hidden sm:ml-6 sm:flex sm:items-center">
                             <div class="ml-3 relative" x-data="{ open: false }">
                                 <button @click="open = !open" 
@@ -77,7 +67,6 @@
                                     </div>
                                 </button>
                                 
-                                <!-- Dropdown menu -->
                                 <div x-show="open" 
                                      @click.away="open = false"
                                      x-transition:enter="transition ease-out duration-100"
@@ -105,7 +94,6 @@
                             </div>
                         </div>
                         
-                        <!-- Przycisk menu mobilnego -->
                         <div class="flex items-center sm:hidden">
                             <button @click="mobileOpen = !mobileOpen"
                                     class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
@@ -115,7 +103,6 @@
                     </div>
                 </div>
                 
-                <!-- Menu mobilne -->
                 <div x-show="mobileOpen" 
                      x-transition:enter="transition ease-out duration-100"
                      x-transition:enter-start="transform opacity-0 scale-95"
@@ -164,10 +151,8 @@
             </nav>
         @endauth
         
-        <!-- Kontener na flash messages -->
         <div id="flash-messages" class="fixed top-4 right-4 z-50 space-y-2"></div>
         
-        <!-- Loading indicator -->
         <div id="loading" x-show="$store.loading.show" x-cloak
              class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
             <div class="bg-white rounded-lg p-6 flex items-center shadow-xl">
@@ -176,7 +161,6 @@
             </div>
         </div>
         
-        <!-- Główna zawartość -->
         <main class="@auth py-6 @else flex items-center justify-center min-h-screen @endauth">
             <div class="@auth max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 @endauth w-full">
                 @yield('content')
@@ -185,14 +169,11 @@
     </div>
 
     <script>
-        // Konfiguracja Axios
         axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
         axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         
-        // Licznik aktywnych żądań
         let loadingCount = 0;
         
-        // Funkcje do kontroli loadera
         function showLoading() {
             loadingCount++;
             if (window.Alpine) {
@@ -207,7 +188,6 @@
             }
         }
         
-        // Interceptory Axios
         axios.interceptors.request.use(config => {
             showLoading();
             return config;
@@ -224,7 +204,6 @@
             error => {
                 hideLoading();
                 
-                // Obsługa błędów
                 if (error.response) {
                     switch (error.response.status) {
                         case 401:
@@ -237,7 +216,6 @@
                             showFlash('Nie znaleziono zasobu', 'error');
                             break;
                         case 422:
-                            // Błędy walidacji - obsługiwane osobno
                             break;
                         case 500:
                             showFlash('Wystąpił błąd serwera. Spróbuj ponownie później', 'error');
@@ -253,7 +231,6 @@
             }
         );
         
-        // Funkcja do wyświetlania powiadomień
         function showFlash(message, type = 'success') {
             const container = document.getElementById('flash-messages');
             const id = 'flash-' + Date.now();
@@ -283,18 +260,15 @@
             
             container.appendChild(alert);
             
-            // Animacja wejścia
             setTimeout(() => {
                 alert.classList.add('translate-x-0');
             }, 10);
             
-            // Automatyczne usunięcie po 5 sekundach
             setTimeout(() => {
                 removeFlash(id);
             }, 5000);
         }
         
-        // Funkcja do usuwania powiadomień
         function removeFlash(id) {
             const element = document.getElementById(id);
             if (element) {
@@ -305,13 +279,11 @@
             }
         }
         
-        // Obsługa nieobsłużonych błędów
         window.addEventListener('unhandledrejection', event => {
             console.error('Promise rejection:', event.reason);
             showFlash('Wystąpił nieoczekiwany błąd', 'error');
         });
         
-        // Wyświetlanie flash messages z sesji Laravel
         document.addEventListener('DOMContentLoaded', () => {
             @if(session('success'))
                 showFlash('{{ session('success') }}', 'success');

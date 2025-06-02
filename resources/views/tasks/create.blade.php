@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Nowe zadanie - ToDo App')
+@section('title', 'Nowe zadanie - RBR Krzysztof Dobosz')
 
 @section('content')
 <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8" x-data="taskForm()">
@@ -269,7 +269,7 @@ function taskForm() {
                 }
             },
             {
-                name: 'Projekt kodowania',
+                name: 'Projekt programistyczny',
                 description: 'Implementacja nowej funkcjonalności',
                 icon: '💻',
                 priority: 'high',
@@ -336,7 +336,6 @@ function taskForm() {
         ],
 
         init() {
-            // Set default due date to tomorrow
             this.setDueDate(1);
         },
 
@@ -349,7 +348,6 @@ function taskForm() {
         useTemplate(template) {
             this.form = { ...this.form, ...template.template };
             
-            // Set due date based on template duration
             if (template.duration.includes('tydzień') || template.duration.includes('tygodnie')) {
                 const weeks = template.duration.includes('2') ? 2 : 1;
                 this.setDueDate(weeks * 7);
@@ -377,7 +375,6 @@ function taskForm() {
                     showFlash('Zadanie zostało utworzone pomyślnie!', 'success');
                     
                     if (this.createAnother) {
-                        // Reset form but keep some values
                         const keepValues = {
                             priority: this.form.priority,
                             status: this.form.status

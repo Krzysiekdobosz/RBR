@@ -1,26 +1,19 @@
 <?php
-// app/Models/Task.php
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 use Carbon\Carbon;
 
 class Task extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
-        'user_id',
-        'name',
-        'description',
-        'priority',
-        'status',
-        'due_date',
-        'reminder_sent'
+        'user_id', 'name', 'description', 
+        'priority', 'status', 'due_date', 
+        'reminder_sent', 'share_token'
     ];
 
     protected $casts = [
@@ -33,73 +26,97 @@ class Task extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function sharedTokens(): HasMany
+    public function versions(): HasMany
     {
-        return $this->hasMany(SharedTaskToken::class);
+        return $this->hasMany(TaskVersion::class)->orderBy('created_at', 'desc');
     }
 
-    // Scope dla filtrowania
-    public function scopeByStatus($query, $status)
+    public function scopeOverdue(Builder $query): Builder
     {
-        if ($status) {
-            return $query->where('status', $status);
-        }
-        return $query;
-    }
-
-    public function scopeByPriority($query, $priority)
-    {
-        if ($priority) {
-            return $query->where('priority', $priority);
-        }
-        return $query;
-    }
-
-    public function scopeByDueDate($query, $from = null, $to = null)
-    {
-        if ($from) {
-            $query->where('due_date', '>=', $from);
-        }
-        if ($to) {
-            $query->where('due_date', '<=', $to);
-        }
-        return $query;
-    }
-
-    public function scopeOverdue($query)
-    {
-        return $query->where('due_date', '<', Carbon::today())
+        return $query->where('due_date', '<', now())
                     ->where('status', '!=', 'done');
     }
 
-    public function scopeDueTomorrow($query)
+    public function scopeDueTomorrow(Builder $query): Builder
     {
-        return $query->where('due_date', Carbon::tomorrow())
-                    ->where('status', '!=', 'done')
-                    ->where('reminder_sent', false);
+        return $query->whereDate('due_date', Carbon::tomorrow());
     }
 
-    // Accessors
     public function getIsOverdueAttribute(): bool
     {
-        return $this->due_date < Carbon::today() && $this->status !== 'done';
+        return $this->due_date->isPast() && $this->status !== 'done';
     }
 
     public function getDaysUntilDueAttribute(): int
     {
-        return Carbon::today()->diffInDays($this->due_date, false);
+        return now()->diffInDays($this->due_date, false);
     }
 
-    // Helper methods
-    public function generateShareToken(int $expiryHours = 24): SharedTaskToken
+    public function createVersion(array $oldAttributes = null): TaskVersion
     {
-        // Dezaktywuj poprzednie tokeny
-        $this->sharedTokens()->update(['is_active' => false]);
+        $changes = [];
+        
+        if ($oldAttributes) {
+            $trackableFields = ['name', 'description', 'priority', 'status', 'due_date', 'reminder_sent'];
+            
+            foreach ($trackableFields as $field) {
+                $oldValue = $oldAttributes[$field] ?? null;
+                $newValue = $this->getAttribute($field);
+                
+                if ($this->isDifferent($oldValue, $newValue)) {
+                    $changes[$field] = [
+                        'old' => $oldValue,
+                        'new' => $newValue
+                    ];
+                }
+            }
+        }
 
-        return $this->sharedTokens()->create([
-            'token' => bin2hex(random_bytes(32)),
-            'expires_at' => Carbon::now()->addHours($expiryHours),
-            'is_active' => true,
+        return $this->versions()->create([
+            'user_id' => $this->user_id,
+            'name' => $this->name,
+            'description' => $this->description,
+            'priority' => $this->priority,
+            'status' => $this->status,
+            'due_date' => $this->due_date,
+            'reminder_sent' => $this->reminder_sent,
+            'created_at' => now(),
+            'changes' => empty($changes) ? null : $changes,
         ]);
+    }
+
+    private function isDifferent($oldValue, $newValue): bool
+    {
+        if ($oldValue instanceof \Carbon\Carbon || $newValue instanceof \Carbon\Carbon) {
+            $old = $oldValue ? $oldValue->format('Y-m-d') : null;
+            $new = $newValue ? $newValue->format('Y-m-d') : null;
+            return $old !== $new;
+        }
+
+        if (is_bool($oldValue) || is_bool($newValue)) {
+            return (bool) $oldValue !== (bool) $newValue;
+        }
+
+        $old = $oldValue === '' ? null : $oldValue;
+        $new = $newValue === '' ? null : $newValue;
+
+        return $old !== $new;
+    }
+
+    public function save(array $options = [])
+    {
+        $createVersion = $options['create_version'] ?? true;
+        
+        if ($createVersion && $this->exists) {
+            $oldAttributes = $this->getOriginal();
+        }
+
+        $result = parent::save($options);
+
+        if ($createVersion && $this->exists && isset($oldAttributes) && $this->wasChanged()) {
+            $this->createVersion($oldAttributes);
+        }
+
+        return $result;
     }
 }

@@ -14,15 +14,19 @@ use App\Models\User;
 class AuthWebController extends Controller
 {
     /**
-     * Pokaż formularz logowania
+     * Summary of showLogin
+     * @return \Illuminate\Contracts\View\View
      */
     public function showLogin(): View
     {
         return view('auth.login');
     }
 
+
     /**
-     * Przetwórz logowanie
+     * Summary of processLogin
+     * @param \Illuminate\Http\Request $request
+     * @return RedirectResponse
      */
     public function processLogin(Request $request): RedirectResponse
     {
@@ -47,7 +51,8 @@ class AuthWebController extends Controller
     }
 
     /**
-     * Pokaż formularz rejestracji
+     * Summary of showRegister
+     * @return \Illuminate\Contracts\View\View
      */
     public function showRegister(): View
     {
@@ -55,7 +60,9 @@ class AuthWebController extends Controller
     }
 
     /**
-     * Przetwórz rejestrację
+     * Summary of processRegister
+     * @param \Illuminate\Http\Request $request
+     * @return RedirectResponse
      */
     public function processRegister(Request $request): RedirectResponse
     {
@@ -89,7 +96,9 @@ class AuthWebController extends Controller
     }
 
     /**
-     * Wyloguj użytkownika
+     * Summary of logout
+     * @param \Illuminate\Http\Request $request
+     * @return RedirectResponse
      */
     public function logout(Request $request): RedirectResponse
     {

@@ -11,32 +11,32 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create(table: 'task_versions', function (Blueprint $table) {
-            $table->id();
+    Schema::create('task_versions', function (Blueprint $table) {
+        $table->id();
 
-            // powiązanie z oryginalnym zadaniem
-            $table->foreignId('task_id')
-                ->constrained()
-                ->cascadeOnDelete();
+        // powiązanie z oryginalnym zadaniem
+        $table->foreignId('task_id')
+            ->constrained()
+            ->cascadeOnDelete();
 
-            // powiązanie z właścicielem (denormalizacja)
-            $table->foreignId('user_id')
-                ->constrained()
-                ->cascadeOnDelete();
+        // powiązanie z właścicielem (denormalizacja)
+        $table->foreignId('user_id')
+            ->constrained()
+            ->cascadeOnDelete();
 
-            // dane snapshotu
-            $table->string('name');
-            $table->text('description')->nullable();
-            $table->enum('priority', ['low', 'medium', 'high']);
-            $table->enum('status',   ['to-do', 'in_progress', 'done']);
-            $table->date('due_date');
-            $table->boolean('reminder_sent')->default(false);
+        // dane snapshotu
+        $table->string('name');
+        $table->text('description')->nullable();
+        $table->enum('priority', ['low', 'medium', 'high']);
+        $table->enum('status',   ['to-do', 'in_progress', 'done']);
+        $table->date('due_date');
+        $table->boolean('reminder_sent')->default(false);
 
-            $table->timestamp('created_at');   // kiedy utworzono wersję
+        $table->timestamp('created_at');   // kiedy utworzono wersję
 
-            // Przydatny indeks do szybkiego filtrowania po użytkowniku
-            $table->index('user_id');
-        });
+        // Przydatny indeks do szybkiego filtrowania po użytkowniku
+        $table->index('user_id');
+    });
 
     }
 

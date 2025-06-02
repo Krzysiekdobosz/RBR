@@ -1,5 +1,4 @@
 <?php
-// app/Http/Controllers/Web/SharedTaskWebController.php
 
 namespace App\Http\Controllers\Web;
 
@@ -10,6 +9,11 @@ use Illuminate\View\View;
 
 class SharedTaskWebController extends Controller
 {
+    /**
+     * Summary of show
+     * @param string $token
+     * @return \Illuminate\Contracts\View\View
+     */
     public function show(string $token): View
     {
         $shareToken = SharedTaskToken::with('task.user')

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard - ToDo App')
+@section('title', 'RBR Krzysztof Dobosz')
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -359,7 +359,6 @@ function formatDate(dateString) {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
     
-    // Reset czasu dla porównania dat
     today.setHours(0, 0, 0, 0);
     tomorrow.setHours(0, 0, 0, 0);
     const dateCompare = new Date(date);

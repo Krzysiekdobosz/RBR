@@ -141,6 +141,7 @@
                 </a>
             </div>
         </div>
+    <div class="max-h-[500px] overflow-y-auto">
 
         <ul x-show="!loading && tasks.length > 0" x-cloak class="divide-y divide-gray-200">
             <template x-for="task in tasks" :key="task.id">
@@ -188,7 +189,7 @@
                             <div class="flex items-center space-x-2">
                                 <select @change="quickUpdateStatus(task.id, $event.target.value)"
                                         :value="task.status"
-                                        class="text-xs border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500">
+                                        class="text-xs flex-1 border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500">
                                     <option value="to-do">Do zrobienia</option>
                                     <option value="in_progress">W trakcie</option>
                                     <option value="done">Zakończone</option>
@@ -235,6 +236,7 @@
                 </li>
             </template>
         </ul>
+        </div>
     </div>
 
     <div x-show="!loading && pagination.last_page > 1" x-cloak class="mt-6">

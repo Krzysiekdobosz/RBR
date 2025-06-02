@@ -1,5 +1,4 @@
 <?php
-// app/Models/SharedTaskToken.php
 
 namespace App\Models;
 
@@ -19,30 +18,47 @@ class SharedTaskToken extends Model
         'is_active'
     ];
 
+    /**
+     * Summary of casts
+     * @var array
+     */
     protected $casts = [
         'expires_at' => 'datetime',
         'is_active' => 'boolean',
     ];
 
+    /**
+     * Summary of task
+     * @return BelongsTo<Task, SharedTaskToken>
+     */
     public function task(): BelongsTo
     {
         return $this->belongsTo(Task::class);
     }
 
-    // Scope dla aktywnych tokenów
+    /**
+     * Summary of scopeActive
+     * @param mixed $query
+     */
     public function scopeActive($query)
     {
         return $query->where('is_active', true)
                     ->where('expires_at', '>', Carbon::now());
     }
 
-    // Sprawdź czy token jest ważny
+    /**
+     * Summary of isValid
+     * @return bool
+     */
     public function isValid(): bool
     {
         return $this->is_active && $this->expires_at > Carbon::now();
     }
 
-    // Dezaktywuj token
+    /**
+     * Summary of deactivate
+     * @return void
+     */
     public function deactivate(): void
     {
         $this->update(['is_active' => false]);

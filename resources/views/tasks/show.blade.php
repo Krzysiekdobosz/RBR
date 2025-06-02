@@ -260,7 +260,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         Czas wygaśnięcia (godziny)
                     </label>
-                    <input type="number" x-model.number="shareModal.expiryHours" min="1" max="168"
+                    <input type="number" x-model="shareModal.expiryHours" min="1" max="168"
                            class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
                 

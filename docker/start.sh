@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Uruchom cron
+# Uruchom cron w tle
 service cron start
 
-# Uruchom supervisor
-/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+# Uruchom PHP-FPM
+php-fpm

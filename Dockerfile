@@ -1,57 +1,40 @@
 FROM php:8.2-fpm
 
-# Zainstaluj zależności systemowe
+# ------------------- system -------------------
 RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip \
-    unzip \
-    libzip-dev \
-    libpq-dev \
-    cron \
-    supervisor
+    git curl libpng-dev libonig-dev libxml2-dev \
+    zip unzip libzip-dev libpq-dev \
+    cron supervisor nano \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Wyczyść cache apt
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Zainstaluj rozszerzenia PHP
+# ------------------- php -------------------
 RUN docker-php-ext-install pdo pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd zip
+RUN pecl install redis && docker-php-ext-enable redis
 
-# Zainstaluj Composer
+# ------------------- composer -------------------
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Ustaw katalog roboczy
+# ------------------- app -------------------
 WORKDIR /var/www
 
-# Skopiuj pliki composer
-COPY composer.json composer.lock ./
+# zależności – zachowaj cache
+COPY --chown=www-data:www-data composer.json composer.lock ./
+RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction
 
-# Zainstaluj zależności PHP
-RUN composer install --no-dev --optimize-autoloader --no-scripts
+# kod aplikacji
+COPY --chown=www-data:www-data . .
 
-# Skopiuj kod aplikacji
-COPY . .
-
-# Ustaw uprawnienia
-RUN chown -R www-data:www-data /var/www \
-    && chmod -R 755 /var/www/storage \
-    && chmod -R 755 /var/www/bootstrap/cache
-
-# Skopiuj konfigurację supervisor
+# ------------------- supervisor & cron -------------------
 COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-# Skopiuj konfigurację cron
 COPY docker/cron/laravel-scheduler /etc/cron.d/laravel-scheduler
-RUN chmod 0644 /etc/cron.d/laravel-scheduler \
-    && crontab /etc/cron.d/laravel-scheduler
+RUN chmod 0644 /etc/cron.d/laravel-scheduler && crontab /etc/cron.d/laravel-scheduler
 
-# Skopiuj skrypt startowy
+# ------------------- start -------------------
 COPY docker/start.sh /start.sh
 RUN chmod +x /start.sh
 
-EXPOSE 9000
+# tylko wymagane katalogi muszą być zapisywalne
+RUN chmod -R 755 storage bootstrap/cache
 
+EXPOSE 9000
 CMD ["/start.sh"]

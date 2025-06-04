@@ -17,11 +17,16 @@ return new class extends Migration
             $table->enum('status', ['to-do', 'in_progress', 'done'])->default('to-do');
             $table->date('due_date');
             $table->boolean('reminder_sent')->default(false);
+            $table->string('share_token')->nullable();
+            $table->string('google_event_id')->nullable();
+            $table->boolean('sync_to_calendar')->default(false);
+            $table->timestamp('calendar_synced_at')->nullable();
             $table->timestamps();
             
             $table->index(['user_id', 'status']);
             $table->index(['user_id', 'priority']);
             $table->index(['due_date', 'reminder_sent']);
+            $table->index('google_event_id');
         });
     }
 

@@ -15,7 +15,8 @@ class Task extends Model
         'user_id', 'name', 'description', 
         'priority', 'status', 'due_date', 
         'reminder_sent', 'share_token',
-        'google_event_id', 'sync_to_calendar'
+        'google_event_id', 'sync_to_calendar',
+        'calendar_synced_at'
     ];
 
     protected $casts = [
@@ -56,7 +57,7 @@ class Task extends Model
         return now()->diffInDays($this->due_date, false);
     }
 
-        public function syncToGoogleCalendar(): bool
+    public function syncToGoogleCalendar(): bool
     {
         try {
             if ($this->google_event_id) {

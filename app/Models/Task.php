@@ -7,18 +7,22 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Builder;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class Task extends Model
 {
     protected $fillable = [
         'user_id', 'name', 'description', 
         'priority', 'status', 'due_date', 
-        'reminder_sent', 'share_token'
+        'reminder_sent', 'share_token',
+        'google_event_id', 'sync_to_calendar'
     ];
 
     protected $casts = [
         'due_date' => 'date',
         'reminder_sent' => 'boolean',
+        'sync_to_calendar' => 'boolean',
+        'calendar_synced_at' => 'datetime',
     ];
 
     public function user(): BelongsTo
@@ -50,6 +54,36 @@ class Task extends Model
     public function getDaysUntilDueAttribute(): int
     {
         return now()->diffInDays($this->due_date, false);
+    }
+
+        public function syncToGoogleCalendar(): bool
+    {
+        try {
+            if ($this->google_event_id) {
+                // Aktualizuj istniejące wydarzenie
+                return app('App\Services\GoogleCalendarService')->updateEvent($this);
+            } else {
+                // Stwórz nowe wydarzenie
+                return app('App\Services\GoogleCalendarService')->createEvent($this);
+            }
+        } catch (\Exception $e) {
+            Log::error('Google Calendar sync failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function removeFromGoogleCalendar(): bool
+    {
+        if (!$this->google_event_id) {
+            return true;
+        }
+
+        try {
+            return app('App\Services\GoogleCalendarService')->deleteEvent($this);
+        } catch (\Exception $e) {
+            Log::error('Google Calendar removal failed: ' . $e->getMessage());
+            return false;
+        }
     }
 
     public function createVersion(array $oldAttributes = null): TaskVersion

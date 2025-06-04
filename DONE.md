@@ -48,6 +48,11 @@
 - ✅ UI do generowania linków
 - ✅ Copy to clipboard
 
+### ✅ **8. Dodatkowo**
+- ✅ Duplikowanie zadań
+- ✅ Panel Pracownika 
+- ✅ Pogląd szczegółowy i ogólny zadań
+- ✅ Przyjazne UI
 ---
 
 ## 🏗️ **Wymagania Techniczne - Realizacja**

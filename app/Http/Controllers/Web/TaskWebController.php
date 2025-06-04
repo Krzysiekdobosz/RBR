@@ -11,6 +11,7 @@ use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use App\Services\GoogleCalendarService;
 
 class TaskWebController extends Controller
 {
@@ -356,4 +357,68 @@ class TaskWebController extends Controller
             'data' => $versions
         ]);
     }
+
+public function syncToCalendar(Task $task)
+{
+    if ($task->user_id !== auth()->id()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Brak uprawnień do tego zadania'
+        ], 403);
+    }
+    
+    try {
+        $task->sync_to_calendar = true;
+        $task->save();
+        
+        if ($task->syncToGoogleCalendar()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Zadanie zostało dodane do kalendarza Google'
+            ]);
+        }
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Nie udało się zsynchronizować z kalendarzem'
+        ], 500);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Błąd synchronizacji: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
+public function unsyncFromCalendar(Task $task)
+{
+    if ($task->user_id !== auth()->id()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Brak uprawnień do tego zadania'
+        ], 403);
+    }
+    
+    try {
+        if ($task->removeFromGoogleCalendar()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Zadanie zostało usunięte z kalendarza Google'
+            ]);
+        }
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Nie udało się usunąć z kalendarza'
+        ], 500);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Błąd: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
 }

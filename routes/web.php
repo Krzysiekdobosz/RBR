@@ -39,6 +39,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/tasks/bulk-update', [TaskWebController::class, 'bulkUpdate'])->name('api.tasks.bulk-update');
         Route::get('/tasks/{task}/history', [TaskWebController::class, 'history'])->name('api.tasks.history');
         Route::get('/user', [TaskWebController::class, 'apiUser'])->name('api.user');
+        Route::post('/tasks/{task}/sync-calendar', [TaskWebController::class, 'syncToCalendar'])->name('api.tasks.sync-calendar');
+        Route::delete('/tasks/{task}/sync-calendar', [TaskWebController::class, 'unsyncFromCalendar'])->name('api.tasks.unsync-calendar');
+
     });
 });
 

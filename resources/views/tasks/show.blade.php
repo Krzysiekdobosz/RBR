@@ -38,6 +38,11 @@
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {{ $task->priority === 'low' ? 'bg-green-100 text-green-800' : ($task->priority === 'medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
                             {{ $task->priority === 'low' ? '🟢 Niski' : ($task->priority === 'medium' ? '🟡 Średni' : '🔴 Wysoki') }}
                         </span>
+                        @if($task->sync_to_calendar)
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+                                <i class="fas fa-calendar-check mr-1"></i>W kalendarzu
+                            </span>
+                        @endif
                         @if($task->is_overdue)
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
                                 <i class="fas fa-exclamation-triangle mr-1"></i>Przeterminowane
@@ -78,6 +83,11 @@
                                 <button @click="duplicateTask()" 
                                         class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     <i class="fas fa-copy mr-2"></i>Duplikuj
+                                </button>
+                                <button @click="task.sync_to_calendar ? unsyncFromCalendar() : syncToCalendar()" 
+                                        class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i :class="task.sync_to_calendar ? 'fas fa-calendar-times' : 'fas fa-calendar-plus'" class="mr-2"></i>
+                                    <span x-text="task.sync_to_calendar ? 'Usuń z kalendarza' : 'Dodaj do kalendarza'"></span>
                                 </button>
                                 <div class="border-t border-gray-100"></div>
                                 <button @click="deleteTask()" 
@@ -272,6 +282,27 @@
                         <i class="fas fa-share mr-2"></i>
                         Udostępnij zadanie
                     </button>
+                    
+                    <div class="border-t pt-3 mt-3">
+                        @if($task->sync_to_calendar)
+                            <button @click="unsyncFromCalendar()"
+                                    class="w-full inline-flex items-center justify-center px-4 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100">
+                                <i class="fas fa-calendar-times mr-2"></i>
+                                Usuń z kalendarza Google
+                            </button>
+                            @if($task->calendar_synced_at)
+                                <p class="mt-2 text-xs text-center text-gray-500">
+                                    Zsynchronizowano: {{ $task->calendar_synced_at->diffForHumans() }}
+                                </p>
+                            @endif
+                        @else
+                            <button @click="syncToCalendar()"
+                                    class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+                                <i class="fas fa-calendar-plus mr-2"></i>
+                                Dodaj do kalendarza Google
+                            </button>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
@@ -411,6 +442,63 @@ function taskView(taskId) {
             } catch (error) {
                 console.error('Duplicate error:', error);
                 showFlash('Błąd podczas duplikowania zadania', 'error');
+            }
+        },
+
+        async syncToCalendar() {
+            try {
+                // Pokaż loader
+                showFlash('Synchronizowanie z kalendarzem...', 'info');
+                
+                const response = await axios.post(`/api/web/tasks/${taskId}/sync-calendar`);
+                
+                if (response.data.success) {
+                    this.task.sync_to_calendar = true;
+                    showFlash('Zadanie zostało dodane do kalendarza Google', 'success');
+                    
+                    // Odśwież stronę po krótkim czasie
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                }
+            } catch (error) {
+                console.error('Calendar sync error:', error);
+                
+                // Sprawdź czy to błąd autoryzacji
+                if (error.response && error.response.status === 403) {
+                    showFlash('Brak uprawnień do synchronizacji z kalendarzem', 'error');
+                } else if (error.response && error.response.data && error.response.data.message) {
+                    showFlash(error.response.data.message, 'error');
+                } else {
+                    showFlash('Błąd podczas synchronizacji z kalendarzem Google', 'error');
+                }
+            }
+        },
+
+        async unsyncFromCalendar() {
+            if (!confirm('Czy na pewno chcesz usunąć to zadanie z kalendarza Google?')) return;
+            
+            try {
+                showFlash('Usuwanie z kalendarza...', 'info');
+                
+                const response = await axios.delete(`/api/web/tasks/${taskId}/sync-calendar`);
+                
+                if (response.data.success) {
+                    this.task.sync_to_calendar = false;
+                    showFlash('Zadanie zostało usunięte z kalendarza Google', 'success');
+                    
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                }
+            } catch (error) {
+                console.error('Calendar unsync error:', error);
+                
+                if (error.response && error.response.data && error.response.data.message) {
+                    showFlash(error.response.data.message, 'error');
+                } else {
+                    showFlash('Błąd podczas usuwania z kalendarza Google', 'error');
+                }
             }
         },
 

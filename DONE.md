@@ -48,6 +48,10 @@
 - ✅ UI do generowania linków
 - ✅ Copy to clipboard
 
+### ✅ **7. Integracja z kalendarzami google**
+- ✅ Potrzeba własnego klucza API google calendar w folderze storage
+
+
 ### ✅ **8. Dodatkowo**
 - ✅ Duplikowanie zadań
 - ✅ Panel Pracownika 
